@@ -7,11 +7,13 @@ use Yii;
 /**
  * This is the model class for table "clients".
  *
- * @property int $id
- * @property string $full_name
- * @property string $gender
- * @property string $phone
+ * @property int         $id
+ * @property string      $full_name
+ * @property string      $gender
+ * @property string      $phone
  * @property string|null $address
+ *
+ * @property Cars[] $cars
  */
 class Clients extends \yii\db\ActiveRecord
 {
@@ -30,7 +32,7 @@ class Clients extends \yii\db\ActiveRecord
             [['phone'], 'unique'],
         ];
     }
-
+    
     public function attributeLabels()
     {
         return [
@@ -44,7 +46,6 @@ class Clients extends \yii\db\ActiveRecord
     
     public function getCars()
     {
-        return $this->hasMany(Cars::class, ['id' => 'id_car'])
-            ->viaTable('client_car_ref', ['id_client' => 'id']);
+        return $this->hasMany(Cars::class, ['id_client' => 'id']);
     }
 }

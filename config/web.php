@@ -50,7 +50,7 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName'  => false,
             'rules' => [
-                'GET       http://parkingapi/web/<controller:[^/:]*>'            => '<controller>/index',
+                'POST       http://parkingapi/web/<controller:[^/:]*>'           => '<controller>/index',
                 'PUT,PATCH http://parkingapi/web/<controller:[^/]*>/<id:[^/:]+>' => '<controller>/update',
                 'POST      http://parkingapi/web/<controller:[^/:]*>'            => '<controller>/create',
                 'DELETE    http://parkingapi/web/<controller:[^/]*>/<id:[^/:]+>' => '<controller>/delete',
@@ -71,7 +71,7 @@ if (YII_ENV_DEV) {
     ];
 
     $config['bootstrap'][] = 'gii';
-    //http://parkingapi/web/index.php?r=gii
+    //http://parkingapi/web/gii
     $config['modules']['gii'] = [
         'class' => 'yii\gii\Module',
         // uncomment the following to add your IP if you are not connecting from localhost.

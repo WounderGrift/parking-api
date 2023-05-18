@@ -30,10 +30,11 @@ class m230516_121104_generate_clients_and_cars_in_parking extends Migration
             for ($carCount = 0; $carCount < $count; $carCount++)
             {
                 $car             = new Cars();
+                $car->id_client  = $client->id;
                 $car->maker      = $faker->randomElement(['Toyota', 'Honda', 'Ford', 'Chevrolet']);
                 $car->model      = $faker->word;
                 $car->color      = $faker->safeColorName;
-                $car->number     =  $faker->randomElement(self::LETTERS) . $faker->numerify('###')
+                $car->number     = $faker->randomElement(self::LETTERS) . $faker->numerify('###')
                     . $faker->randomElement(self::LETTERS) . $faker->randomElement(self::LETTERS);
                 $car->in_parking = $faker->boolean;
                 $car->save();
@@ -46,7 +47,6 @@ class m230516_121104_generate_clients_and_cars_in_parking extends Migration
     public function safeDown()
     {
         \Yii::$app->db->createCommand('SET FOREIGN_KEY_CHECKS=0')->execute();
-        \Yii::$app->db->createCommand()->truncateTable('client_car_ref')->execute();
         \Yii::$app->db->createCommand()->truncateTable('clients')->execute();
         \Yii::$app->db->createCommand()->truncateTable('cars')->execute();
         \Yii::$app->db->createCommand('SET FOREIGN_KEY_CHECKS=1')->execute();
