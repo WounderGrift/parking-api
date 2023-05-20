@@ -18,12 +18,12 @@ class ParkingApiController extends Controller
             ],
         ];
     }
-    
+
     public function beforeAction($action)
     {
         return parent::beforeAction($action);
     }
-    
+
     /**
      * Метод для получения списка клиентов с их автомобилями на основе фильтрации.
      * @return string Список клиентов с их автомобилями в формате JSON.
@@ -57,7 +57,7 @@ class ParkingApiController extends Controller
 
         $clientParams = $request['client'];
         $autoParams   = $request['car'];
-    
+
         $result  = Clients::find()
             ->select('*')
             ->leftJoin('cars', 'cars.id_client = clients.id')
@@ -71,10 +71,10 @@ class ParkingApiController extends Controller
             ->andFilterWhere(['in_parking' => $autoParams['inParking']])
             ->limit($request['limit'])
             ->createCommand()->queryAll();
-    
+
         return Json::encode($result);
     }
-    
+
     /**
      * Метод для создания нового клиента и связанных с ним автомобилей.
      *
@@ -125,6 +125,7 @@ class ParkingApiController extends Controller
         {
             $clientModel = new Clients();
             $clientModel->setAttributes($clientParams, true);
+
             if (!$clientModel->validate())
             {
                 return $this->asJson(['error' => $clientModel->errors]);
@@ -133,30 +134,33 @@ class ParkingApiController extends Controller
         else
         {
             $clientModel = Clients::findOne($clientParams['id']);
+
+            if (!$clientModel)
+            {
+                return $this->asJson(['error' => 'Client not found']);
+            }
         }
-        
-        if (!$clientModel)
-        {
-            return $this->asJson(['error' => 'Client not found']);
-        }
+
+
         $clientModel->save();
-        
+
         foreach ($carsData as $carData)
         {
             $carModel            = new Cars();
             $carModel->setAttributes($carData);
             $carModel->id_client = $clientModel->id;
-            
+
             if (!$carModel->validate())
             {
                 return $this->asJson(['error' => $carModel->errors]);
             }
+
             $carModel->save();
         }
-        
+
         return $this->asJson(['result' => 'ok']);
     }
-    
+
     /**
      * Метод для обновления информации о клиенте и его автомобилях.
      *
@@ -205,51 +209,54 @@ class ParkingApiController extends Controller
     {
         $request      = Json::decode(\Yii::$app->request->getRawBody(), true);
         $clientParams = $request['client'];
-        
+
         if ($clientParams)
         {
             /** @var Clients $client */
             $clientModel = Clients::findOne($clientParams['id']);
+
             if (!$clientModel)
             {
                 return $this->asJson(['error' => 'Not Found']);
             }
-            
+
             $clientModel->setAttributes($clientParams, true);
+
             if (!$clientModel->validate())
             {
                 return $this->asJson(['error' => $clientModel->errors]);
             }
-            
+
             $clientModel->full_name = $clientParams['name'];
             $clientModel->gender    = $clientParams['gender'];
             $clientModel->phone     = $clientParams['phone'];
             $clientModel->address   = $clientParams['address'];
             $clientModel->save();
         }
-    
+
         $carNotFound = [];
         $carsParams  = $request['cars'];
-        
+
         if ($carsParams)
         {
             foreach ($carsParams as $auto)
             {
                 /** @var Cars $car */
                 $carModel = Cars::findOne($auto['id']);
-                
+
                 if (!$carModel)
                 {
                     $carNotFound[] = $auto['id'];
                     continue;
                 }
-                    
+
                 $carModel->setAttributes($carsParams, true);
+
                 if (!$carModel->validate())
                 {
                     return $this->asJson(['error' => $carModel->errors]);
                 }
-    
+
                 $carModel->maker      = $auto['maker'];
                 $carModel->model      = $auto['model'];
                 $carModel->color      = $auto['color'];
@@ -263,7 +270,7 @@ class ParkingApiController extends Controller
             ? 'ID auto ' . implode($carNotFound) . ' not found'
             : 'ok']);
     }
-    
+
     /**
      * Метод для удаления записи об автомобиле из базы данных.
      *
@@ -287,24 +294,24 @@ class ParkingApiController extends Controller
     {
         $request = \Yii::$app->request->getBodyParams();
         $autoId  = $request['carId'];
-        
+
         if (!empty($autoId))
         {
             /** @var Cars $car */
             $carModel = Cars::findOne($autoId);
             $carModel->setAttributes($autoId);
-   
+
             if (!$carModel->validate())
             {
                 return $this->asJson(['error' => $carModel->errors]);
             }
-    
+
             $carModel->delete();
         }
-        
+
         return Json::encode(['result' => 'ok']);
     }
-    
+
     /**
      * Метод для удаления записи о клиенте и его автомобилях из базы данных.
      *
@@ -328,28 +335,29 @@ class ParkingApiController extends Controller
     {
         $request  = \Yii::$app->request->getBodyParams();
         $clientId = $request['clientId'];
-        
+
         if (!empty($clientId))
         {
             /** @var Cars $carModel */
             $carModel = Cars::find()->where(['id_client' => $clientId])->all();
+
             foreach ($carModel as $car)
             {
                 $car->delete();
             }
-            
+
             /** @var Clients $client */
             $clientModel = Clients::findOne($clientId);
             $clientModel->setAttributes($clientId);
-            
+
             if (!$clientModel->validate())
             {
                 return $this->asJson(['error' => $clientModel->errors]);
             }
-            
+
             $clientModel->delete();
         }
-        
+
         return Json::encode(['result' => 'ok']);
     }
 }
